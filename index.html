@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farm Checklist - Cabal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="brand">
+                <div class="logo">⚔️</div>
+                <div>
+                    <h1>Farm Checklist</h1>
+                    <p class="subtitle">Cabal Império • Diário</p>
+                </div>
+            </div>
+            <div class="day-info">
+                <span id="currentDay" class="chip"></span>
+                <span id="dailyGoal" class="chip goal"></span>
+                <span id="totalTime" class="chip time">0 min</span>
+                <span id="remainingTime" class="chip remaining">0 min restantes</span>
+            </div>
+        </header>
+
+        <main class="content">
+            <section class="controls">
+                <div class="library-section">
+                    <h3>Biblioteca de Dungeons</h3>
+                    <form id="addLibraryForm" autocomplete="off">
+                        <div class="form-row">
+                            <input id="libraryDungeonInput" type="text" placeholder="Nome da dungeon" maxlength="60" required />
+                            <input id="libraryTimeInput" type="number" placeholder="Tempo (min)" min="1" max="999" step="1" required />
+                            <button type="submit" class="btn primary">Adicionar à Biblioteca</button>
+                        </div>
+                    </form>
+                    <div id="libraryList" class="library-list"></div>
+                </div>
+                
+                <div class="daily-section">
+                    <h3>Dungeons de Hoje</h3>
+                    <div id="availableDungeons" class="available-dungeons"></div>
+                </div>
+                <div class="progress-wrap">
+                    <div class="progress-header">
+                        <span>Progresso</span>
+                        <span id="progressText">0/0</span>
+                    </div>
+                    <div class="progress-bar" aria-label="Barra de progresso">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                    <div class="time-summary">
+                        <span id="timeSpent">Tempo gasto: 0 min</span>
+                        <span id="timeRemaining" style="display: none;">Tempo restante: 0 min</span>
+                        <span id="timeTotalNeeded" style="display: none;">Tempo total necessário: 0 min</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="list-section">
+                <ul id="dungeonList" class="list" aria-live="polite"></ul>
+                <div id="congrats" class="congrats" hidden>
+                    <div class="confetti" aria-hidden="true"></div>
+                    <p>Parabéns! Meta do dia concluída! 🎉</p>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <div class="weekday-goals">
+                <span class="weekday" data-day="1">Seg</span>
+                <span class="weekday" data-day="2">Ter</span>
+                <span class="weekday" data-day="3">Qua</span>
+                <span class="weekday" data-day="4">Qui</span>
+                <span class="weekday" data-day="5">Sex</span>
+                <span class="weekday" data-day="6">Sáb</span>
+                <span class="weekday" data-day="0">Dom</span>
+            </div>
+            <div class="alz-panel">
+                <div class="field">
+                    <label for="alzCurrent">Alzes hoje</label>
+                    <input id="alzCurrent" type="number" inputmode="numeric" placeholder="0" min="0" step="1" />
+                </div>
+                <div class="field">
+                    <label for="alzGoal">Meta</label>
+                    <input id="alzGoal" type="number" inputmode="numeric" placeholder="0" min="0" step="1" />
+                </div>
+                <div class="alz-progress">
+                    <span id="alzProgressText">0 / 0 Alz</span>
+                    <div class="alz-bar"><div id="alzBarFill" class="alz-fill"></div></div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+<!-- Feito com ❤ para organizar seu farm -->
+ </html>
+
+
