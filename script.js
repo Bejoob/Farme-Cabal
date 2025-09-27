@@ -14,8 +14,8 @@ const WEEKDAY_GOALS = {
 };
 
 const STORAGE_KEY = 'cabal_farm_checklist_v2';
-const STORAGE_KEY_ALZ = 'cabal_farm_alz_v1';
 const STORAGE_KEY_LIBRARY = 'cabal_farm_library_v1';
+const STORAGE_KEY_ALZ_LIBRARY = 'cabal_farm_alz_library_v1';
 
 function getTodayKey() {
   const now = new Date();
@@ -26,29 +26,6 @@ function getTodayKey() {
   return `${y}-${m}-${d}`;
 }
 
-function readAlzStorage() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_ALZ);
-    return raw ? JSON.parse(raw) : {};
-  } catch (e) {
-    console.error('Erro ao ler storage Alz', e);
-    return {};
-  }
-}
-
-function writeAlzStorage(data) {
-  try { localStorage.setItem(STORAGE_KEY_ALZ, JSON.stringify(data)); } catch (e) { console.error('Erro ao salvar Alz', e); }
-}
-
-function getAlzStateForToday() {
-  const all = readAlzStorage();
-  const todayKey = getTodayKey();
-  if (!all[todayKey]) {
-    all[todayKey] = { current: 0, goal: 0 };
-    writeAlzStorage(all);
-  }
-  return { all, todayKey, state: all[todayKey] };
-}
 
 // Library functions
 function readLibraryStorage() {
@@ -98,6 +75,56 @@ function removeFromLibrary(id) {
 
 function getLibrary() {
   return readLibraryStorage();
+}
+
+// Alz Library functions
+function readAlzLibraryStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_ALZ_LIBRARY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.error('Erro ao ler storage da biblioteca de Alzes', e);
+    return [];
+  }
+}
+
+function writeAlzLibraryStorage(data) {
+  try {
+    localStorage.setItem(STORAGE_KEY_ALZ_LIBRARY, JSON.stringify(data));
+  } catch (e) {
+    console.error('Erro ao salvar biblioteca de Alzes', e);
+  }
+}
+
+function addToAlzLibrary(name, value) {
+  const library = readAlzLibraryStorage();
+  const newAlz = {
+    id: Date.now(),
+    name: name.trim(),
+    value: parseInt(value) || 0,
+    createdAt: Date.now()
+  };
+  
+  // Check if alz already exists
+  const exists = library.some(a => a.name.toLowerCase() === newAlz.name.toLowerCase());
+  if (exists) {
+    alert('Este farm já existe na biblioteca de Alzes!');
+    return false;
+  }
+  
+  library.push(newAlz);
+  writeAlzLibraryStorage(library);
+  return true;
+}
+
+function removeFromAlzLibrary(id) {
+  const library = readAlzLibraryStorage();
+  const filtered = library.filter(a => a.id !== id);
+  writeAlzLibraryStorage(filtered);
+}
+
+function getAlzLibrary() {
+  return readAlzLibraryStorage();
 }
 
 function readStorage() {
@@ -173,6 +200,7 @@ function renderLibrary() {
 
 function renderAvailableDungeons() {
   const library = getLibrary();
+  const { state } = getStateForToday();
   const todayItems = state.items || [];
   const availableDungeons = $('#availableDungeons');
   availableDungeons.innerHTML = '';
@@ -201,6 +229,60 @@ function renderAvailableDungeons() {
     
     availableDungeons.appendChild(item);
   });
+}
+
+function renderAlzLibrary() {
+  const library = getAlzLibrary();
+  const alzLibraryList = $('#alzLibraryList');
+  
+  if (!alzLibraryList) {
+    console.error('alzLibraryList element not found!');
+    return;
+  }
+  
+  alzLibraryList.innerHTML = '';
+  
+  if (library.length === 0) {
+    alzLibraryList.innerHTML = '<p style="color: var(--muted); text-align: center; padding: 20px;">Nenhum farm na biblioteca de Alzes</p>';
+    updateAlzSummary(0, 0);
+    return;
+  }
+  
+  // Calculate total alzes
+  const totalAlzes = library.reduce((sum, alz) => sum + alz.value, 0);
+  
+  library.forEach((alz) => {
+    const item = document.createElement('div');
+    item.className = 'library-item';
+    
+    item.innerHTML = `
+      <div class="library-item-info">
+        <span class="library-item-name">${alz.name}</span>
+        <span class="library-item-alz">${formatAlzes(alz.value)}</span>
+      </div>
+      <div class="library-item-actions">
+        <button class="btn btn-remove" onclick="removeAlzFromLibrary(${alz.id})">✖</button>
+      </div>
+    `;
+    
+    alzLibraryList.appendChild(item);
+  });
+  
+  // Update summary
+  updateAlzSummary(totalAlzes, library.length);
+}
+
+function updateAlzSummary(totalAlzes, farmsCount) {
+  const alzTotalValue = $('#alzTotalValue');
+  const alzFarmsCount = $('#alzFarmsCount');
+  
+  if (alzTotalValue) {
+    alzTotalValue.innerHTML = formatAlzes(totalAlzes);
+  }
+  
+  if (alzFarmsCount) {
+    alzFarmsCount.textContent = farmsCount;
+  }
 }
 
 function renderWeekdayChips(currentDay) {
@@ -378,6 +460,7 @@ function main() {
     // Render library and available dungeons
     renderLibrary();
     renderAvailableDungeons();
+    renderAlzLibrary();
     const total = state.items.length;
     const completed = state.items.filter(i => (goal > 0 ? i.count >= goal : i.count > 0)).length;
     
@@ -402,7 +485,6 @@ function main() {
     updateProgressUI(total, completed, totalTime, remainingTime, goal, totalTimeNeeded);
     setCongratsVisible(total > 0 && completed === total);
 
-    renderAlz();
   }
 
   function addItem(title, time) {
@@ -477,6 +559,27 @@ function main() {
     }
   });
 
+  // Alz Library form submit
+  $('#addAlzForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const nameInput = $('#alzNameInput');
+    const valueInput = $('#alzValueInput');
+    const name = nameInput.value.trim();
+    const value = valueInput.value;
+    
+    if (!name || !value) {
+      alert('Por favor, preencha nome e valor do farm');
+      return;
+    }
+    
+    if (addToAlzLibrary(name, value)) {
+      nameInput.value = '';
+      valueInput.value = '';
+      nameInput.focus();
+      render(); // Refresh all displays
+    }
+  });
+
   // Manual reset button removed per user request
 
   // Auto reset on day change
@@ -494,17 +597,12 @@ function main() {
       // Refresh references
       const fresh = getStateForToday();
       state.items = fresh.state.items;
-      // also ensure Alz state exists
-      const alzAll = readAlzStorage();
-      if (!alzAll[key]) { alzAll[key] = { current: 0, goal: 0 }; writeAlzStorage(alzAll); }
       render();
     }
   }, 60 * 1000);
 
   // Initial render
-  console.log('About to do initial render');
   render();
-  console.log('Initial render completed');
 }
 
 console.log('Script loaded, waiting for DOM...');
@@ -550,30 +648,44 @@ window.removeDungeonFromLibrary = function(libraryId, state, all, todayKey) {
   }
 };
 
-// Alz UI logic
-function renderAlz() {
-  const { all, todayKey, state } = getAlzStateForToday();
-  const current = Number(state.current) || 0;
-  const goal = Number(state.goal) || 0;
-  const inputCurrent = $('#alzCurrent');
-  const inputGoal = $('#alzGoal');
-  if (!inputCurrent || !inputGoal) return;
-  inputCurrent.value = String(current);
-  inputGoal.value = String(goal);
-  const denom = Math.max(1, goal);
-  const pct = Math.min(100, Math.round((current / denom) * 100));
-  $('#alzProgressText').textContent = `${current} / ${goal} Alz`;
-  $('#alzBarFill').style.width = `${pct}%`;
+window.removeAlzFromLibrary = function(alzId) {
+  if (confirm('Tem certeza que deseja remover este farm da biblioteca de Alzes?')) {
+    removeFromAlzLibrary(alzId);
+    
+    // Re-render everything
+    const mainFunction = window.mainFunction;
+    if (mainFunction) {
+      mainFunction.render();
+    }
+  }
+};
 
-  const persist = () => {
-    const snapshot = all;
-    snapshot[todayKey] = { current: Number(inputCurrent.value) || 0, goal: Number(inputGoal.value) || 0 };
-    writeAlzStorage(snapshot);
-    renderAlz();
-  };
 
-  inputCurrent.oninput = persist;
-  inputGoal.oninput = persist;
+// Function to format Alzes with colors (simplified values: 1=1M, 10=10M, 100=100M, 1000=1B, etc.)
+function formatAlzes(alzes) {
+  let formattedAlzes = '';
+  let colorClass = '';
+
+  if (alzes >= 10000) { // 10B+
+    formattedAlzes = `${(alzes / 1000).toFixed(0)}B`;
+    colorClass = 'alz-pink';
+  } else if (alzes >= 1000) { // 1B+
+    formattedAlzes = `${(alzes / 1000).toFixed(1)}B`;
+    colorClass = 'alz-purple';
+  } else if (alzes >= 100) { // 100M+
+    formattedAlzes = `${alzes}M`;
+    colorClass = 'alz-orange';
+  } else if (alzes >= 10) { // 10M+
+    formattedAlzes = `${alzes}M`;
+    colorClass = 'alz-green';
+  } else if (alzes >= 1) { // 1M+
+    formattedAlzes = `${alzes}M`;
+    colorClass = 'alz-blue';
+  } else {
+    formattedAlzes = String(alzes);
+  }
+
+  return `<span class="${colorClass}">${formattedAlzes}</span>`;
 }
 
 

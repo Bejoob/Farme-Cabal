@@ -12,6 +12,13 @@
   --shadow: 0 10px 30px rgba(0,0,0,0.35);
 }
 
+/* Alz colors */
+.alz-blue { color: #6ee7f5; } /* 1M */
+.alz-green { color: #34d399; } /* 10M */
+.alz-orange { color: #fbbf24; } /* 100M */
+.alz-purple { color: #8b5cf6; } /* 1B */
+.alz-pink { color: #f472b6; } /* 10B */
+
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body {
@@ -115,6 +122,14 @@ body {
   background: rgba(110,231,245,0.1);
   padding: 2px 6px;
   border-radius: 4px;
+}
+
+.library-item-alz {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.05);
 }
 
 .library-item-actions {
@@ -328,22 +343,173 @@ body {
 }
 .weekday.active { color: #07121e; background: linear-gradient(180deg, var(--primary), #58d1e3); border-color: rgba(0,0,0,0.1); font-weight: 800; }
 
-.alz-panel { display: grid; grid-template-columns: repeat(2, auto) 1fr; align-items: center; gap: 12px; min-width: 260px; }
-.field { display: grid; gap: 4px; }
-.field label { font-size: 11px; color: var(--muted); }
-.field input { width: 120px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text); padding: 8px 10px; border-radius: 10px; }
-.alz-progress { display: grid; gap: 6px; align-items: center; }
-.alz-progress span { font-size: 12px; color: var(--muted); }
-.alz-bar { height: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; min-width: 160px; }
-.alz-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #22c55e, #34d399); transition: width 300ms ease; }
+/* Alz Section Styles */
+.alz-section {
+  margin-top: 20px;
+}
+
+.alz-container {
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+
+.alz-container h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.alz-daily-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.alz-daily-section h4 {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.alz-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.alz-field {
+  display: grid;
+  gap: 6px;
+}
+
+.alz-field label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.alz-field input {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--text);
+  padding: 12px 14px;
+  border-radius: 12px;
+  outline: none;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+  font-size: 14px;
+}
+
+.alz-field input::placeholder {
+  color: var(--muted);
+}
+
+.alz-field input:focus {
+  border-color: rgba(110,231,245,0.6);
+  box-shadow: 0 0 0 6px rgba(110,231,245,0.12);
+}
+
+.alz-progress {
+  display: grid;
+  gap: 8px;
+}
+
+.alz-progress-text {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 600;
+  text-align: center;
+}
+
+.alz-bar {
+  height: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.alz-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #22c55e, #34d399);
+  transition: width 300ms ease;
+}
+
+/* Alz Summary Styles */
+.alz-summary {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.alz-summary h4 {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.alz-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.alz-total-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.alz-total-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.alz-breakdown {
+  display: grid;
+  gap: 8px;
+}
+
+.alz-breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 8px;
+}
+
+.alz-breakdown-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.alz-breakdown-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
 
 @media (max-width: 640px) {
   .brand h1 { font-size: 18px; }
   .form-row { grid-template-columns: 1fr; gap: 8px; }
   .time-summary { grid-template-columns: 1fr; gap: 6px; }
   .footer { flex-direction: column; align-items: stretch; gap: 14px; }
-  .alz-panel { grid-template-columns: 1fr 1fr; }
-  .field input { width: 100%; }
+  .alz-form { grid-template-columns: 1fr; gap: 12px; }
 }
 
 

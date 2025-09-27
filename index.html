@@ -68,6 +68,34 @@
                     <p>Parabéns! Meta do dia concluída! 🎉</p>
                 </div>
             </section>
+
+            <section class="alz-section">
+                <div class="alz-container">
+                    <h3>Biblioteca de Alzes</h3>
+                    <form id="addAlzForm" autocomplete="off">
+                        <div class="form-row">
+                            <input id="alzNameInput" type="text" placeholder="Nome do farm (ex: Dungeon X)" maxlength="60" required />
+                            <input id="alzValueInput" type="number" placeholder="Valor (1=1M, 10=10M, 100=100M)" min="1" step="1" required />
+                            <button type="submit" class="btn primary">Adicionar à Biblioteca</button>
+                        </div>
+                    </form>
+                    <div id="alzLibraryList" class="library-list"></div>
+                    
+                    <div class="alz-summary">
+                        <h4>Resumo dos Alzes</h4>
+                        <div class="alz-total">
+                            <span class="alz-total-label">Total de Alzes:</span>
+                            <span id="alzTotalValue" class="alz-total-value">0</span>
+                        </div>
+                        <div class="alz-breakdown">
+                            <div class="alz-breakdown-item">
+                                <span class="alz-breakdown-label">Farms adicionados:</span>
+                                <span id="alzFarmsCount" class="alz-breakdown-value">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
 
         <footer class="footer">
@@ -79,20 +107,6 @@
                 <span class="weekday" data-day="5">Sex</span>
                 <span class="weekday" data-day="6">Sáb</span>
                 <span class="weekday" data-day="0">Dom</span>
-            </div>
-            <div class="alz-panel">
-                <div class="field">
-                    <label for="alzCurrent">Alzes hoje</label>
-                    <input id="alzCurrent" type="number" inputmode="numeric" placeholder="0" min="0" step="1" />
-                </div>
-                <div class="field">
-                    <label for="alzGoal">Meta</label>
-                    <input id="alzGoal" type="number" inputmode="numeric" placeholder="0" min="0" step="1" />
-                </div>
-                <div class="alz-progress">
-                    <span id="alzProgressText">0 / 0 Alz</span>
-                    <div class="alz-bar"><div id="alzBarFill" class="alz-fill"></div></div>
-                </div>
             </div>
         </footer>
     </div>
