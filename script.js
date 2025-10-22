@@ -3,19 +3,21 @@ const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
 // Weekday goals mapping: 0=Sun .. 6=Sat
+// Now using custom daily goals instead of fixed values
 const WEEKDAY_GOALS = {
   0: 0,   // Domingo: livre
-  1: 20,  // Segunda
-  2: 10,  // Terça
-  3: 20,  // Quarta
-  4: 10,  // Quinta
-  5: 20,  // Sexta
-  6: 10   // Sábado
+  1: 0,   // Segunda: personalizado
+  2: 0,   // Terça: personalizado
+  3: 0,   // Quarta: personalizado
+  4: 0,   // Quinta: personalizado
+  5: 0,   // Sexta: personalizado
+  6: 0    // Sábado: personalizado
 };
 
-const STORAGE_KEY = 'cabal_farm_checklist_v2';
+const STORAGE_KEY = 'cabal_farm_checklist_v3';
 const STORAGE_KEY_LIBRARY = 'cabal_farm_library_v1';
 const STORAGE_KEY_ALZ_LIBRARY = 'cabal_farm_alz_library_v1';
+const STORAGE_KEY_DAILY_GOALS = 'cabal_daily_goals_v1';
 
 function getTodayKey() {
   const now = new Date();
@@ -161,8 +163,36 @@ function saveState(todayKey, state, all) {
   writeStorage(snapshot);
 }
 
+// Daily goals management
+function readDailyGoalsStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_DAILY_GOALS);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    console.error('Erro ao ler storage das metas diárias', e);
+    return {};
+  }
+}
+
+function writeDailyGoalsStorage(data) {
+  try {
+    localStorage.setItem(STORAGE_KEY_DAILY_GOALS, JSON.stringify(data));
+  } catch (e) {
+    console.error('Erro ao salvar metas diárias', e);
+  }
+}
+
 function getGoalForDay(dayIndex) {
-  return WEEKDAY_GOALS[dayIndex] ?? 0;
+  const dailyGoals = readDailyGoalsStorage();
+  const todayKey = getTodayKey();
+  return dailyGoals[todayKey] || 0;
+}
+
+function setGoalForToday(goal) {
+  const dailyGoals = readDailyGoalsStorage();
+  const todayKey = getTodayKey();
+  dailyGoals[todayKey] = Math.max(0, parseInt(goal) || 0);
+  writeDailyGoalsStorage(dailyGoals);
 }
 
 function getWeekdayLabel(dayIndex) {
@@ -297,7 +327,8 @@ function renderHeader() {
   const day = now.getDay();
   const goal = getGoalForDay(day);
   $('#currentDay').textContent = getWeekdayLabel(day);
-  $('#dailyGoal').textContent = goal > 0 ? `Meta: ${goal} dungeons` : 'Meta: Livre';
+  $('#dailyGoal').textContent = goal > 0 ? `Meta: ${goal} DGs` : 'Meta: Livre';
+  $('#customGoalInput').value = goal;
   renderWeekdayChips(day);
 }
 
@@ -339,13 +370,13 @@ function createItemElement(item, index, goal, onToggleDone, onInc, onDec, onDele
   counter.textContent = `${Math.min(item.count, goal)}/${goal || 0}`;
 
   const dec = document.createElement('button');
-  dec.className = 'icon-btn';
+  dec.className = 'icon-btn danger';
   dec.setAttribute('aria-label', 'Diminuir');
   dec.innerHTML = `<span class="icon">−</span>`;
   dec.addEventListener('click', () => onDec(index));
 
   const inc = document.createElement('button');
-  inc.className = 'icon-btn';
+  inc.className = 'icon-btn success';
   inc.setAttribute('aria-label', 'Aumentar');
   inc.innerHTML = `<span class="icon">+</span>`;
   inc.addEventListener('click', () => onInc(index));
@@ -379,7 +410,7 @@ function createItemElement(item, index, goal, onToggleDone, onInc, onDec, onDele
 
 function updateProgressUI(totalDungeons, completedDungeons, totalTime, remainingTime, goal, totalTimeNeeded) {
   const denom = Math.max(1, totalDungeons);
-  $('#progressText').textContent = `${completedDungeons}/${totalDungeons} dungeons`;
+  $('#progressText').textContent = `${completedDungeons}/${totalDungeons} DGs`;
   const pct = Math.min(100, Math.round((completedDungeons / denom) * 100));
   $('#progressFill').style.width = `${pct}%`;
   
@@ -411,6 +442,40 @@ function updateProgressUI(totalDungeons, completedDungeons, totalTime, remaining
     $('#timeTotalNeeded').style.display = 'inline-block';
   } else {
     $('#timeTotalNeeded').style.display = 'none';
+  }
+  
+  // Add visual feedback for completion status
+  const progressFill = $('#progressFill');
+  if (completedDungeons >= totalDungeons && totalDungeons > 0) {
+    progressFill.style.background = 'var(--gradient-success)';
+    progressFill.style.boxShadow = '0 0 18px rgba(52,211,153,0.35) inset';
+  } else {
+    progressFill.style.background = 'var(--gradient-primary)';
+    progressFill.style.boxShadow = '0 0 18px rgba(139,92,246,0.35) inset';
+  }
+  
+  // Update efficiency summary
+  updateEfficiencySummary(completedDungeons, totalTime, goal);
+}
+
+function updateEfficiencySummary(completedDungeons, totalTime, goal) {
+  const efficiencySummary = $('#efficiencySummary');
+  const efficiencyValue = $('#efficiencyValue');
+  const dungeonsPerHour = $('#dungeonsPerHour');
+  
+  if (goal > 0 && totalTime > 0) {
+    // Calculate efficiency percentage
+    const efficiency = Math.round((completedDungeons / goal) * 100);
+    efficiencyValue.textContent = `${efficiency}%`;
+    
+    // Calculate dungeons per hour
+    const hours = totalTime / 60;
+    const dph = hours > 0 ? Math.round(completedDungeons / hours) : 0;
+    dungeonsPerHour.textContent = dph;
+    
+    efficiencySummary.style.display = 'grid';
+  } else {
+    efficiencySummary.style.display = 'none';
   }
 }
 
@@ -578,6 +643,14 @@ function main() {
       nameInput.focus();
       render(); // Refresh all displays
     }
+  });
+
+  // Custom goal input handler
+  $('#customGoalInput').addEventListener('input', (e) => {
+    const goal = parseInt(e.target.value) || 0;
+    setGoalForToday(goal);
+    renderHeader();
+    render(); // Refresh all displays
   });
 
   // Manual reset button removed per user request
