@@ -367,7 +367,11 @@ function createItemElement(item, index, goal, onToggleDone, onInc, onDec, onDele
 
   const counter = document.createElement('span');
   counter.className = 'counter';
-  counter.textContent = `${Math.min(item.count, goal)}/${goal || 0}`;
+  if (goal > 0) {
+    counter.textContent = `${Math.min(item.count, goal)}/${goal}`;
+  } else {
+    counter.textContent = `${item.count}/∞`;
+  }
 
   const dec = document.createElement('button');
   dec.className = 'icon-btn danger';
@@ -572,7 +576,12 @@ function main() {
     const item = state.items[index];
     if (!item) return;
     const done = item.count >= goal && goal > 0;
-    item.count = done ? 0 : goal;
+    if (goal > 0) {
+      item.count = done ? 0 : goal;
+    } else {
+      // Domingo livre: alterna entre 0 e 1
+      item.count = item.count > 0 ? 0 : 1;
+    }
     saveState(todayKey, state, all);
     render();
   }
@@ -580,8 +589,12 @@ function main() {
   function incCount(index) {
     const item = state.items[index];
     if (!item) return;
-    if (goal === 0) return; // Domingo livre, não conta reps
-    item.count = Math.min(goal, (item.count || 0) + 1);
+    if (goal === 0) {
+      // Domingo livre: incrementa sem limite
+      item.count = (item.count || 0) + 1;
+    } else {
+      item.count = Math.min(goal, (item.count || 0) + 1);
+    }
     saveState(todayKey, state, all);
     render();
   }
@@ -589,7 +602,6 @@ function main() {
   function decCount(index) {
     const item = state.items[index];
     if (!item) return;
-    if (goal === 0) return;
     item.count = Math.max(0, (item.count || 0) - 1);
     saveState(todayKey, state, all);
     render();
