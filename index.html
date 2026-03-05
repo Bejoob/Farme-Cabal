@@ -21,12 +21,7 @@
             </div>
             <div class="day-info">
                 <span id="currentDay" class="chip"></span>
-                <div class="goal-control">
-                    <span id="dailyGoal" class="chip goal">Meta: 0 DGs</span>
-                    <input id="customGoalInput" type="number" placeholder="Qtd DGs" min="0" max="999" value="0" class="goal-input" />
-                </div>
-                <span id="totalTime" class="chip time">0 min</span>
-                <span id="remainingTime" class="chip remaining">0 min restantes</span>
+                <span id="headerProgress" class="chip goal">0/0 DGs</span>
             </div>
         </header>
 
@@ -37,7 +32,6 @@
                     <form id="addLibraryForm" autocomplete="off">
                         <div class="form-row">
                             <input id="libraryDungeonInput" type="text" placeholder="Nome da dungeon" maxlength="60" required />
-                            <input id="libraryTimeInput" type="number" placeholder="Tempo (min)" min="1" max="999" step="1" required />
                             <button type="submit" class="btn primary">Adicionar à Biblioteca</button>
                         </div>
                     </form>
@@ -55,21 +49,6 @@
                     </div>
                     <div class="progress-bar" aria-label="Barra de progresso">
                         <div id="progressFill" class="progress-fill"></div>
-                    </div>
-                    <div class="time-summary">
-                        <span id="timeSpent">Tempo gasto: 0 min</span>
-                        <span id="timeRemaining" style="display: none;">Tempo restante: 0 min</span>
-                        <span id="timeTotalNeeded" style="display: none;">Tempo total necessário: 0 min</span>
-                    </div>
-                    <div class="efficiency-summary" id="efficiencySummary" style="display: none;">
-                        <div class="efficiency-item">
-                            <span class="efficiency-label">Eficiência:</span>
-                            <span id="efficiencyValue" class="efficiency-value">0%</span>
-                        </div>
-                        <div class="efficiency-item">
-                            <span class="efficiency-label">DGs/hora:</span>
-                            <span id="dungeonsPerHour" class="efficiency-value">0</span>
-                        </div>
                     </div>
                 </div>
             </section>
